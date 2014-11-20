@@ -280,7 +280,11 @@ module Replicate
         # write replicated attributes to the instance
         attributes.each do |key, value|
           next if key == primary_key and not replicate_id
-          instance.send :write_attribute, key, value
+          # Don't write the attribute with the same value as before to avoid
+          # triggering unique key constraints
+          unless instance.send(:read_attribute, key) == value
+            instance.send :write_attribute, key, value 
+          end
         end
 
         # save the instance bypassing all callbacks and validations
